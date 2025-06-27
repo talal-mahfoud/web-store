@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">لوحة التحكم</h2>
+
+<!-- إضافة منتج -->
+<h3>إضافة منتج جديد</h3>
+<form method="POST" action="/add_product" class="mb-5">
+    <div class="mb-3">
+        <label>اسم المنتج</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>وصف المنتج</label>
+        <textarea name="description" class="form-control" required></textarea>
+    </div>
+    <div class="mb-3">
+        <label>السعر</label>
+        <input type="number" step="0.01" name="price" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>صورة المنتج (اسم الملف)</label>
+        <input type="text" name="image" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">إضافة المنتج</button>
+</form>
+
+<!-- قائمة المنتجات -->
+<h3>المنتجات</h3>
+<div class="table-responsive mb-5">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>الاسم</th>
+                <th>الوصف</th>
+                <th>السعر</th>
+                <th>الصورة</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.price }} د.ل</td>
+                <td>{{ product.image }}</td>
+                <td>
+                    <form method="POST" action="/delete_product/{{ product.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- قائمة الطلبات -->
+<h3>الطلبات</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>رقم الطلب</th>
+                <th>اسم العميل</th>
+                <th>رقم الهاتف</th>
+                <th>الطلبات</th>
+                <th>المجموع</th>
+                <th>الحالة</th>
+                <th>الوقت</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.customer_name }}</td>
+                <td>{{ order.customer_phone }}</td>
+                <td>
+                    <ul>
+                        {% for item, details in json.loads(order.items).items() %}
+                        <li>{{ item }} ({{ details.quantity }} × {{ details.price }} د.ل</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ order.total }} د.ل</td>
+                <td>
+                    <form method="POST" action="/update_status/{{ order.id }}">
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>معلق</option>
+                            <option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>جارٍ التحضير</option>
+                            <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>جاهز</option>
+                            <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>تم التسليم</option>
+                        </select>
+                    </form>
+                </td>
+                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
